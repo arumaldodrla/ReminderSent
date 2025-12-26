@@ -1,91 +1,108 @@
-# 05. API Specification: tRPC and Webhooks
+_# 05. API Specification: tRPC and Webhooks
 
 **Owner:** Manus AI
-**Last Updated:** 2025-12-18
-**Version:** 1.0
+**Last Updated:** 2025-12-26
+**Version:** 2.0
 
-**Purpose:** This document provides the complete technical specification for the ReminderSend API, including all tRPC procedures and incoming webhooks. It defines the inputs, outputs, validation schemas (Zod), and authorization rules for each endpoint.
+**Purpose:** This document provides the definitive technical specification for the ReminderSend API. It details the tRPC procedures and incoming webhooks that power the platform, defining all inputs, outputs, validation schemas (Zod), authorization rules, and error handling.
 
 ---
 
-## 1. API Philosophy
+## 1. API Guiding Principles
 
-*   **Type-Safe:** The API is built with tRPC to provide end-to-end type safety, eliminating a common class of bugs between the frontend and backend.
-*   **Zod Validation:** All inputs are rigorously validated using Zod schemas to ensure data integrity and security.
-*   **Stateless:** The API is stateless, with all state managed in the Supabase database.
-*   **Secure by Default:** All procedures require authentication unless explicitly marked as public.
+*   **Type-Safety First:** The API is built with tRPC to provide compile-time, end-to-end type safety. This is a non-negotiable principle that minimizes a vast class of frontend-backend integration bugs.
+*   **Explicit Validation:** All data entering the system from an external source (user input, webhooks) MUST be rigorously validated using Zod schemas. Trust nothing.
+*   **Statelessness:** All API endpoints and serverless functions are stateless. State is managed exclusively in the Supabase database.
+*   **Secure by Default:** All tRPC procedures require authentication unless explicitly marked as `public`. Authorization is enforced via tRPC middleware and database RLS policies.
 
-## 2. tRPC Procedures
+## 2. tRPC API Structure
 
-The API is organized into routers based on resources (e.g., `auth`, `reminders`, `responses`).
+The API is organized into routers, where each router corresponds to a logical resource (e.g., `reminders`).
 
-### 2.1. `auth` Router
+### 2.1. Authentication (`auth` Router)
 
-Handles user authentication and session management.
+Handles user signup, login, and session management.
 
-| Procedure | Auth | Input (Zod Schema) | Output (Zod Schema) |
-| :--- | :--- | :--- | :--- |
-| `signup` | Public | `z.object({ email: z.string().email(), password: z.string().min(8) })` | `z.object({ user: z.object({ id: z.string(), email: z.string() }) })` |
-| `login` | Public | `z.object({ email: z.string().email(), password: z.string() })` | `z.object({ session: z.any(), user: z.any() })` |
-| `logout` | Required | `z.void()` | `z.object({ error: z.null() })` |
-| `me` | Required | `z.void()` | `z.object({ id: z.string(), email: z.string(), organization_id: z.string() })` |
+| Procedure | Auth Level | Input (Zod Schema) | Output (Zod Schema) | Error Codes |
+| :--- | :--- | :--- | :--- | :--- |
+| `signup` | Public | `z.object({ email: z.string().email(), password: z.string().min(8), orgName: z.string() })` | `z.object({ user: z.object({ id: z.string(), email: z.string() }) })` | `CONFLICT` (Email exists) |
+| `login` | Public | `z.object({ email: z.string().email(), password: z.string() })` | `z.object({ session: z.any(), user: z.any() })` | `UNAUTHORIZED` |
+| `logout` | **Authenticated** | `z.void()` | `z.object({ error: z.null() })` | `UNAUTHORIZED` |
+| `getMe` | **Authenticated** | `z.void()` | `z.object({ id: z.string(), email: z.string(), organization_id: z.string() })` | `UNAUTHORIZED` |
 
-### 2.2. `reminders` Router
+### 2.2. Reminders (`reminders` Router)
 
-Manages the creation, retrieval, and modification of reminders.
+Manages the full lifecycle of reminders.
 
-| Procedure | Auth | Input (Zod Schema) | Output (Zod Schema) |
-| :--- | :--- | :--- | :--- |
-| `create` | Required | `z.object({ title: z.string(), description: z.string().optional(), recipients: z.array(z.object({ channel: z.enum(['email', 'whatsapp', 'telegram']), address: z.string() })), schedule: z.string() /* ISO 8601 or cron */ })` | `z.object({ id: z.string(), title: z.string(), status: z.string() })` |
-| `list` | Required | `z.object({ limit: z.number().optional(), offset: z.number().optional() })` | `z.array(z.object({ id: z.string(), title: z.string(), status: z.string(), recipient_count: z.number() }))` |
-| `getById` | Required | `z.object({ id: z.string() })` | `z.object({ id: z.string(), title: z.string(), description: z.string().optional(), ..., responses: z.array(...) })` |
-| `update` | Required | `z.object({ id: z.string(), ... /* fields to update */ })` | `z.object({ id: z.string(), ... /* updated fields */ })` |
-| `delete` | Required | `z.object({ id: z.string() })` | `z.object({ success: z.boolean() })` |
+| Procedure | Auth Level | Input (Zod Schema) | Output (Zod Schema) | Error Codes |
+| :--- | :--- | :--- | :--- | :--- |
+| `create` | **Authenticated** | `ReminderCreateInput` (see below) | `Reminder` (see below) | `BAD_REQUEST`, `UNAUTHORIZED` |
+| `list` | **Authenticated** | `z.object({ limit: z.number().optional(), cursor: z.string().optional() })` | `z.object({ items: z.array(Reminder), nextCursor: z.string().nullish() })` | `UNAUTHORIZED` |
+| `getById` | **Authenticated** | `z.object({ id: z.string().uuid() })` | `Reminder` | `NOT_FOUND`, `UNAUTHORIZED` |
+| `update` | **Authenticated** | `ReminderUpdateInput` | `Reminder` | `NOT_FOUND`, `UNAUTHORIZED` |
+| `delete` | **Authenticated** | `z.object({ id: z.string().uuid() })` | `z.object({ success: z.boolean() })` | `NOT_FOUND`, `UNAUTHORIZED` |
 
-### 2.3. `responses` Router
+### 2.3. Responses (`responses` Router)
 
-Handles responses from recipients.
+Handles incoming responses from recipients.
 
-| Procedure | Auth | Input (Zod Schema) | Output (Zod Schema) |
-| :--- | :--- | :--- | :--- |
-| `submit` | Public | `z.object({ token: z.string(), action: z.enum(['done', 'later']), note: z.string().optional() })` | `z.object({ success: z.boolean(), message: z.string() })` |
+| Procedure | Auth Level | Input (Zod Schema) | Output (Zod Schema) | Error Codes |
+| :--- | :--- | :--- | :--- | :--- |
+| `submit` | Public | `z.object({ token: z.string(), action: z.enum(['done', 'snooze']), note: z.string().optional() })` | `z.object({ success: z.boolean(), message: z.string() })` | `BAD_REQUEST`, `NOT_FOUND` |
 
-## 3. Webhooks (Incoming)
+## 3. Zod Schema Definitions
 
-The platform will consume webhooks from external services to enable real-time data synchronization.
+```typescript
+// Example Zod schemas for the 'reminders' router
 
-### 3.1. Zoho Webhooks
+const RecipientSchema = z.object({
+  channel: z.enum(['email', 'whatsapp', 'telegram']),
+  address: z.string(),
+});
+
+export const ReminderCreateInput = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  recipients: z.array(RecipientSchema).min(1),
+  schedule: z.any(), // To be replaced with a detailed schedule schema
+});
+
+export const Reminder = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  status: z.string(),
+  createdAt: z.date(),
+  // ... other fields
+});
+```
+
+## 4. Incoming Webhooks
+
+Webhooks are used for real-time data synchronization from external services.
 
 | Service | Event | Endpoint | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Zoho Billing** | `subscription.renewed` | `/api/webhooks/zoho/billing` | To update the subscription status in the ReminderSend database. |
-| **Zoho Books** | `invoice.paid` | `/api/webhooks/zoho/books` | To automatically mark the corresponding reminder as complete. |
+| **Zoho Billing** | `subscription.renewed` | `/api/webhooks/zoho/billing` | Updates subscription status in the local database. |
+| **Zoho Books** | `invoice.paid` | `/api/webhooks/zoho/books` | Automatically marks the corresponding reminder as complete. |
 
-**Security:** All incoming webhooks MUST be secured. This will be achieved by validating a signature passed in the webhook request headers. The secret used for signing will be unique for each configured webhook.
+**Security:** All webhook endpoints MUST be secured. Handlers must validate a cryptographic signature (e.g., `X-Zoho-Signature`) passed in the request headers. The secret key used for signing must be unique per webhook and stored securely.
 
-## 4. Idempotency
+## 5. Idempotency and Error Handling
 
-*   **`reminder.create`:** This procedure is NOT idempotent. Calling it multiple times will create multiple reminders.
-*   **`response.submit`:** This procedure MUST be idempotent. If a recipient clicks the response link multiple times, the system should record the first response and ignore subsequent attempts.
-*   **Webhook Handlers:** All webhook handlers MUST be idempotent. It is common for webhook providers to send the same event more than once. The handler logic should check if the event has already been processed before taking action.
-
-## 5. Rate Limiting
-
-To prevent abuse and ensure platform stability, rate limiting will be applied to all public-facing endpoints.
-
-| Endpoint/Procedure | Limit | Burst | Notes |
-| :--- | :--- | :--- | :--- |
-| `auth.login` | 10 requests/minute | 5 | Per IP address. |
-| `response.submit` | 20 requests/minute | 10 | Per IP address. |
-| Webhook Endpoints | 100 requests/minute | 50 | Per service (e.g., per Zoho organization). |
+*   **Idempotency:**
+    *   **`response.submit`:** This procedure MUST be idempotent. If a recipient submits a response multiple times, only the first submission should be processed.
+    *   **Webhook Handlers:** All webhook handlers MUST be idempotent. They should check if an event has already been processed (e.g., by checking the event ID against a log) before taking action.
+*   **Error Handling:** The API will use standard tRPC error codes. Custom error messages should be clear and actionable. For example, a `BAD_REQUEST` error on `reminder.create` should return a detailed message explaining which validation rule failed.
 
 ## Implementation Notes for AI Agents
 
-*   **Zod Schemas First:** Define all Zod schemas before implementing the tRPC procedures. This ensures that the data structures are well-defined from the start.
-*   **Auth Middleware:** Implement a tRPC middleware to handle authentication. The middleware should verify the JWT from the `Authorization` header and attach the user object to the request context.
-*   **Webhook Signature Validation:** Create a reusable function or middleware to validate the signatures of incoming webhooks. This is critical for security.
+*   **Shared Zod Schemas:** Define Zod schemas in a shared location that can be imported by both the frontend and backend to ensure maximum type safety.
+*   **tRPC Middleware:**
+    *   **Authentication:** Implement a tRPC middleware that runs on all protected procedures. It should verify the JWT from the `Authorization` header and attach the user's ID and organization ID to the context (`ctx`).
+    *   **Logging:** Create a middleware to log all incoming requests and their outcomes (success or failure), excluding any PII.
+*   **Webhook Signature Validation:** Create a reusable utility function or middleware to validate the signatures of incoming webhooks. This is a critical security measure.
 *   **Acceptance Criteria:**
-    *   All tRPC procedures are implemented with the specified Zod schemas for input and output.
-    *   The auth middleware correctly protects authenticated routes and makes user data available in the context.
-    *   Webhook handlers successfully validate incoming requests and process the event data idempotently.
-    *   Rate limiting is implemented and effectively blocks requests that exceed the defined limits.
+    *   All tRPC procedures are implemented with the exact Zod schemas specified.
+    *   The authentication middleware correctly protects all non-public routes and provides user/organization context.
+    *   Webhook handlers successfully validate the signature of all incoming requests and process the event data idempotently.
+    *   The API returns the correct tRPC error codes for all specified error conditions.

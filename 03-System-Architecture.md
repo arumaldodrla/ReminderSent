@@ -1,148 +1,139 @@
 # 03. System Architecture
 
 **Owner:** Manus AI
-**Last Updated:** 2025-12-18
-**Version:** 1.0
+**Last Updated:** 2025-12-26
+**Version:** 2.0
 
-**Purpose:** This document provides a comprehensive overview of the system architecture for ReminderSend. It details the high-level design, data flows, multi-tenancy model, and key technical decisions to guide AI agent development.
+**Purpose:** This document provides a comprehensive overview of the system architecture for ReminderSend. It details the high-level design, data flows, multi-tenancy model, and key technical decisions, translating the product vision into a technical blueprint for AI agent development.
 
 ---
 
-## 1. High-Level Architecture (C4 Model: Level 1 & 2)
+## 1. Architectural Vision and Principles
 
-The architecture is designed around a serverless, multi-tenant model hosted on Vercel and Supabase, ensuring scalability, security, and rapid development.
+The architecture of ReminderSend is guided by the core product pillars defined in the *00-Product-Vision-and-Business-Context.md*:
 
-### Level 1: System Context
+*   **Simplicity:** The architecture favors managed, serverless solutions (Vercel, Supabase) to reduce operational complexity and allow the development focus to remain on business logic.
+*   **Reliability:** The system is designed for high availability and data integrity, with clear separation of concerns and robust error handling.
+*   **Intelligence:** The architecture is built to support future AI-powered features by centralizing business logic in the backend and maintaining a clean data model.
+*   **Integration:** A dedicated API client layer and webhook handlers are designed to make integrations with external systems like Zoho clean and maintainable.
+
+## 2. High-Level Architecture (C4 Model)
+
+### Level 1: System Context Diagram
+
+This diagram shows how the ReminderSend platform fits into its operating environment.
 
 ```mermaid
 graph TD
-    A[User] --> B(ReminderSend Platform)
-    B --> C{Zoho Suite}
-    B --> D{Notification Services}
-    B --> E{Authorize.net}
+    subgraph "Internet"
+        A[**Creator**<br>(e.g., Freelancer, Manager)] --> B{**ReminderSend Platform**<br>(SaaS Product)}
+        B --> C[**Recipient**<br>(e.g., Client, Colleague)]
+    end
+
+    subgraph "External Services"
+        B --> D{**Zoho Suite**<br>(Billing, Books, CRM, Desk)} 
+        B --> E{**Notification Services**<br>(SendGrid, WhatsApp, Telegram)}
+        B --> F{**Authorize.net**<br>(via Zoho)}
+    end
+
+    style B fill:#1f77b4,stroke:#000,stroke-width:2px,color:#fff
 ```
 
-| System | Description |
-| :--- | :--- |
-| **ReminderSend Platform** | The core SaaS application providing reminder delegation services. |
-| **Zoho Suite** | External system of record for billing, invoicing, CRM, and support. |
-| **Notification Services** | External services (SendGrid, WhatsApp, Telegram) for delivering reminders. |
-| **Authorize.net** | Payment processor, integrated via Zoho Billing. |
+| System | Role | Interaction |
+| :--- | :--- | :--- |
+| **Creator** | The primary user who creates and manages reminders. | Interacts with the ReminderSend web application. |
+| **Recipient** | The person who receives the reminder. | Interacts with a simple, no-login web page via a unique link. |
+| **Zoho Suite** | The business system of record. | Provides data for billing, invoicing, and CRM; receives escalations for support. |
+| **Notification Services** | The delivery channels for reminders. | Sends emails, WhatsApp messages, and Telegram messages on behalf of the platform. |
 
 ### Level 2: Container Diagram
 
+This diagram zooms into the ReminderSend platform to show its major building blocks (containers).
+
 ```mermaid
 graph TD
-    subgraph ReminderSend Platform
-        A[Frontend: Next.js/React] --> B(Backend: tRPC API on Vercel)
-        B --> C(Supabase DB)
-        B --> D(Scheduler)
+    subgraph "ReminderSend Platform"
+        A[**Frontend**<br>(Next.js on Vercel)] --> B[**Backend API**<br>(tRPC on Vercel Serverless)]
+        B --> C[**Database**<br>(Supabase PostgreSQL)]
+        D[**Scheduler**<br>(Vercel Cron)] -.-> B
     end
 
-    B --> E{Zoho API}
-    D --> F{Notification APIs}
+    subgraph "External APIs"
+      B --> E{Zoho API}
+      B --> F{Notification APIs}
+    end
+
+    style A fill:#ff7f0e,stroke:#000,stroke-width:1px,color:#fff
+    style B fill:#2ca02c,stroke:#000,stroke-width:1px,color:#fff
+    style C fill:#d62728,stroke:#000,stroke-width:1px,color:#fff
+    style D fill:#9467bd,stroke:#000,stroke-width:1px,color:#fff
 ```
 
-| Container | Description | Technology |
-| :--- | :--- | :--- |
-| **Frontend** | The user-facing web application for creators and the response page for recipients. | Next.js 15, React, Refine, Tailwind CSS, Metronic |
-| **Backend API** | The serverless backend handling all business logic, authentication, and integrations. | Node.js, TypeScript, tRPC, Zod, Vercel Serverless Functions |
-| **Supabase DB** | The multi-tenant PostgreSQL database for data persistence and user authentication. | Supabase, PostgreSQL, Supabase Auth, RLS |
-| **Scheduler** | The background job runner for sending scheduled reminders and running sync tasks. | Vercel Cron |
+| Container | Description | Technology | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | The user-facing web application for Creators and the simple response page for Recipients. | Next.js 15, React, Refine, Tailwind CSS | Provides a modern, fast, and SEO-friendly user experience with a pre-built admin panel structure. |
+| **Backend API** | The stateless, serverless backend that handles all business logic, authentication, and integrations. | Node.js, TypeScript, tRPC, Zod | End-to-end type safety with tRPC minimizes integration errors, and the serverless nature ensures scalability. |
+| **Database** | The multi-tenant PostgreSQL database for all data persistence and user authentication. | Supabase, PostgreSQL, RLS | A managed, scalable, and secure database with built-in authentication and real-time capabilities. |
+| **Scheduler** | The background job runner for sending scheduled reminders and running periodic sync tasks. | Vercel Cron | Tightly integrated with the serverless backend, offering a simple and reliable way to schedule tasks. |
 
-## 2. Data Flow Diagrams
+## 3. Data Flow Diagrams
 
-### 2.1. Reminder Creation & Scheduling
+### 3.1. Core Logic: Reminder Creation and Delivery
+
+This diagram shows the end-to-end flow of the platform's primary function.
 
 ```mermaid
 sequenceDiagram
-    participant User
+    participant Creator
     participant Frontend
     participant Backend
-    participant SupabaseDB
-
-    User->>Frontend: Fills out reminder form
-    Frontend->>Backend: Calls `reminder.create` tRPC procedure
-    Backend->>SupabaseDB: Inserts new reminder and recipient data
-    SupabaseDB-->>Backend: Returns new reminder ID
-    Backend-->>Frontend: Confirms creation
-    Frontend-->>User: Shows success message
-```
-
-### 2.2. Reminder Sending
-
-```mermaid
-sequenceDiagram
+    participant DB as Database
     participant Scheduler
-    participant Backend
-    participant SupabaseDB
-    participant NotificationService
+    participant NotifService as Notification Service
+    participant Recipient
 
-    Scheduler->>Backend: Triggers `sendReminders` job
-    Backend->>SupabaseDB: Queries for due reminders
-    SupabaseDB-->>Backend: Returns list of reminders
-    loop For each reminder
-        Backend->>NotificationService: Sends reminder via selected channel
-        NotificationService-->>Backend: Confirms delivery
-        Backend->>SupabaseDB: Logs notification and updates status
+    Creator->>Frontend: 1. Fills out and submits reminder form
+    Frontend->>Backend: 2. Calls `reminder.create` tRPC procedure
+    Backend->>DB: 3. Inserts new reminder and recipient data
+    DB-->>Backend: 4. Confirms insertion
+    Backend-->>Frontend: 5. Returns success response
+    
+    Scheduler->>Backend: 6. Triggers `sendReminders` job (every minute)
+    Backend->>DB: 7. Queries for all reminders due to be sent
+    DB-->>Backend: 8. Returns list of due reminders
+    
+    loop For each due reminder
+        Backend->>NotifService: 9. Sends reminder via the selected channel API
+        NotifService-->>Recipient: 10. Delivers notification (e.g., email)
+        NotifService-->>Backend: 11. Confirms delivery (or failure)
+        Backend->>DB: 12. Logs the notification event and status
     end
 ```
 
-### 2.3. Recipient Response
+## 4. Multi-Tenant Architecture
 
-```mermaid
-sequenceDiagram
-    participant Recipient
-    participant Frontend
-    participant Backend
-    participant SupabaseDB
+Data isolation is the most critical security feature of the architecture. It is achieved through a combination of database design and Row-Level Security (RLS).
 
-    Recipient->>Frontend: Clicks unique link in reminder
-    Frontend->>Backend: Calls `response.submit` with token
-    Backend->>SupabaseDB: Validates token and updates reminder status
-    SupabaseDB-->>Backend: Confirms update
-    Backend-->>Frontend: Returns success response
-    Frontend-->>Recipient: Displays confirmation message
-```
+1.  **Organizational Scoping:** Every piece of data in the system (reminders, recipients, etc.) is tied to an `organization_id`.
+2.  **JWT Propagation:** When a user authenticates, Supabase Auth generates a JSON Web Token (JWT) that includes their `user_id` and a custom claim for their `organization_id`.
+3.  **RLS Enforcement:** This JWT is passed with every API request. The database has RLS policies on every table that inspect the `organization_id` from the JWT and automatically filter all `SELECT`, `INSERT`, `UPDATE`, and `DELETE` queries. This ensures that a user from Organization A can **never** see or modify data belonging to Organization B.
 
-## 3. Multi-Tenant Model
+## 5. Scalability and Performance
 
-The platform uses a robust multi-tenant architecture with data isolation enforced at the database level using Supabase's Row-Level Security (RLS).
+The architecture is designed to be scalable from the ground up.
 
-*   **Isolation:** Each organization's data is isolated by an `organization_id`. Users belong to an organization, and all data they create is automatically tagged with their `organization_id`.
-*   **RLS Policies:** Database policies ensure that users can only access data associated with their own `organization_id`. This is enforced for all `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations.
-*   **Authentication:** Supabase Auth handles user authentication and JWT generation. The JWT contains the user's `organization_id`, which is used by the RLS policies.
-
-## 4. Background Job Strategy
-
-**Vercel Cron** is the chosen solution for scheduling and running background jobs due to its tight integration with the Vercel serverless environment and ease of use.
-
-| Job | Schedule | Description |
-| :--- | :--- | :--- |
-| **Send Reminders** | Every minute | Queries the database for reminders that are due to be sent and dispatches them. |
-| **Sync Zoho Data** | Daily at 2 AM UTC | Synchronizes subscription and invoice data from Zoho Billing and Books. |
-| **Database Cleanup** | Weekly | Archives old notifications and performs other database maintenance tasks. |
-
-**Tradeoffs:**
-*   **Pros:** Simple to configure, serverless (no infrastructure to manage), and co-located with the backend API.
-*   **Cons:** Less flexibility than a dedicated queueing system like RabbitMQ or SQS. If job complexity grows significantly, a migration to a dedicated queue may be necessary.
-
-## 5. Key Design Decisions
-
-| Decision | Rationale |
-| :--- | :--- |
-| **tRPC over REST/GraphQL** | Provides end-to-end type safety between the frontend and backend, which is ideal for AI-driven development and reduces the likelihood of integration errors. |
-| **Supabase for Database & Auth** | Offers a powerful combination of a managed PostgreSQL database, built-in authentication, and real-time capabilities, significantly accelerating development. |
-| **Refine for Frontend** | The Refine framework, combined with the Metronic UI kit, provides a production-ready admin panel out of the box, allowing development to focus on core business logic. |
-| **Serverless on Vercel** | Automatic scaling, global distribution, and seamless CI/CD integration make Vercel the optimal choice for hosting the Next.js frontend and serverless backend. |
+*   **Serverless Compute:** The Vercel Serverless Functions that power the backend API can scale automatically to handle thousands of concurrent requests.
+*   **Managed Database:** Supabase is a managed PostgreSQL service that can be scaled vertically (by increasing compute resources) as the user base and data volume grow.
+*   **Asynchronous Jobs:** By offloading time-consuming tasks like sending notifications to background jobs, the API remains fast and responsive for user-facing interactions.
+*   **Efficient Queries:** A thoughtful indexing strategy (detailed in *04-Data-Model-and-RLS.md*) ensures that database queries remain performant even with large datasets.
 
 ## Implementation Notes for AI Agents
 
-*   **RLS is Critical:** The RLS policies are the cornerstone of the multi-tenant security model. They must be implemented and tested thoroughly before any data is written to the database.
-*   **Stateless Backend:** The tRPC backend must be stateless to work correctly in a serverless environment. All state should be stored in the Supabase database.
-*   **Idempotent Jobs:** Background jobs should be designed to be idempotent. If a job fails and is retried, it should not produce duplicate data or unintended side effects.
+*   **Stateless Backend Functions:** All tRPC procedures and cron jobs must be stateless. Any required state must be fetched from the database at the beginning of the execution and persisted at the end. Do not rely on in-memory variables between invocations.
+*   **Idempotent Cron Jobs:** The `sendReminders` cron job must be idempotent. If it runs twice for the same minute due to a system hiccup, it should not send duplicate reminders. This can be achieved by marking reminders as "in-progress" before sending and filtering them out of subsequent queries.
+*   **Centralized API Client:** All interactions with external services (Zoho, SendGrid) must go through a centralized, well-tested API client that handles authentication, retries, and error logging.
 *   **Acceptance Criteria:**
-    *   The system architecture diagram accurately reflects the implemented components.
-    *   Data flow diagrams are validated against the actual tRPC procedures and database queries.
-    *   RLS policies are in place and prevent users from accessing data outside their organization.
-    *   Vercel Cron jobs are configured and successfully trigger the specified backend functions.
+    *   The implemented system components and their interactions must match the diagrams in this document.
+    *   Automated tests must be in place to verify that the RLS policies correctly isolate data between two different test organizations.
+    *   The Vercel Cron jobs must be configured and proven to trigger the correct backend functions at the specified intervals.
+    *   The system must gracefully handle API failures from external services (e.g., Zoho being down) without crashing the backend.

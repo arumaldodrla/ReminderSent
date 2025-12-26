@@ -1,97 +1,101 @@
 # 01. Product Requirements Document (PRD)
 
 **Owner:** Manus AI
-**Last Updated:** 2025-12-18
-**Version:** 1.0
+**Last Updated:** 2025-12-26
+**Version:** 2.0
 
-**Purpose:** This document outlines the product requirements for ReminderSend, a SaaS platform for reminder delegation. It defines the problem, target users, features, and non-functional requirements to guide the development process.
+**Purpose:** This document provides the detailed product requirements for ReminderSend. It translates the strategic goals from the *00-Product-Vision-and-Business-Context.md* into actionable features, user stories, and technical specifications. This PRD is the primary guide for AI agents to build the product and for human stakeholders to understand its functionality.
 
 ---
 
-## 1. Problem Statement
+## 1. The Core Objective: Automating Accountability
 
-Professionals and businesses waste significant time and mental energy manually following up with clients, colleagues, and partners about pending tasks, payments, and deadlines. This manual process is inefficient, prone to error, and lacks a systematic way to track and escalate reminders. Existing task management tools are designed for personal productivity or internal team collaboration, not for the specific use case of delegating reminders to external parties.
+As defined in our product vision, ReminderSend exists to eliminate the mental overhead of following up with people. This document details the "what" and "how" of building our automated accountability engine.
 
-## 2. Target Users & Jobs-to-be-Done (JTBD)
+### 1.1. The Problem in Detail
 
-| Target User Persona | Job-to-be-Done (JTBD) |
+Professionals are burdened by the need to track and chase pending actions from clients, colleagues, and partners. This manual follow-up is a significant drain on productivity and a source of professional friction. Existing tools fail to address this specific pain point, as they are built for either personal task management or internal team collaboration, not for the nuanced task of external reminder delegation.
+
+### 1.2. The Solution: A "Set It and Forget It" Delegation Platform
+
+ReminderSend solves this problem by providing a simple, reliable, and intelligent platform for delegating reminders. Users can define a reminder once and trust the system to handle the entire follow-up process, from multi-channel delivery to escalation.
+
+## 2. Target User Personas and Scenarios
+
+| User Persona | Scenario |
 | :--- | :--- |
-| **Freelancers & Consultants** | Remind clients about invoices, contract signatures, and feedback deadlines. |
-| **Small Business Owners** | Ensure employees submit reports, and clients pay on time. |
-| **Account Managers (B2B SaaS)** | Nudge customers to complete onboarding steps or renew subscriptions. |
-| **Real Estate Agents** | Coordinate document submissions and appointment confirmations with clients. |
+| **Anna, the Freelance Designer** | Anna needs to get feedback from five different clients on her latest designs by Friday. She creates a single reminder in ReminderSend, adds all five clients as recipients, and schedules it to be sent via email. The system will automatically follow up with anyone who hasn't responded by Thursday. |
+| **David, the Small Agency Owner** | David's team needs to submit their weekly timesheets every Friday. He sets up a recurring weekly reminder in ReminderSend that sends a WhatsApp message to each team member every Friday morning. He can see at a glance who has and hasn't confirmed submission. |
+| **Maria, the B2B SaaS Account Manager** | Maria is onboarding a new enterprise customer. She creates a series of reminders linked to their Zoho CRM record to nudge the customer's admin to complete key onboarding steps, ensuring a smooth and timely setup process. |
 
-## 3. Core Workflows
+## 3. Core Product Workflows
 
-### 3.1. Reminder Creation and Scheduling
+### 3.1. The Creator's Journey: Delegating a Reminder
 
-1.  A **Creator** logs into the ReminderSend platform.
-2.  They create a new reminder, specifying a title, description, and one or more **Recipients**.
-3.  The Creator selects the delivery channels (Email, WhatsApp, Telegram) for each recipient.
-4.  They set the reminder schedule: one-time, recurring (daily, weekly, monthly), or based on a specific event (e.g., 3 days before an invoice is due).
-5.  The Creator defines escalation rules (e.g., if no response after 2 days, send a follow-up reminder).
+1.  **Authentication:** The Creator logs into the ReminderSend dashboard.
+2.  **Creation:** The Creator clicks "New Reminder" and fills in the required fields:
+    *   **Title:** A clear, concise summary of the task (e.g., "Please Sign the Q4 Contract").
+    *   **Description (Optional):** More detailed instructions or context.
+    *   **Recipients:** One or more individuals, who can be added manually or synced from Zoho CRM.
+3.  **Channel Selection:** For each recipient, the Creator selects the desired delivery channels (Email, WhatsApp, Telegram).
+4.  **Scheduling:** The Creator defines the sending logic:
+    *   **One-Time:** At a specific date and time.
+    *   **Recurring:** Daily, weekly, or monthly with advanced options.
+    *   **Escalation:** A multi-step sequence (e.g., "If no response in 3 days, send a follow-up via WhatsApp").
+5.  **Confirmation:** The Creator saves the reminder, and it becomes active in the system.
 
-### 3.2. Reminder Delivery and Recipient Experience
+### 3.2. The Recipient's Journey: The "One-Tap" Experience
 
-1.  The system sends the reminder to the Recipient via the selected channels at the scheduled time.
-2.  The Recipient receives a message with a secure, unique link.
-3.  Clicking the link opens a mobile-first web page that requires no login.
-4.  The Recipient can perform a primary action, such as "Mark as Done," or a secondary action like "Remind Me Later."
+1.  **Receives Notification:** The Recipient gets a personalized message on their chosen channel.
+2.  **Takes Action:** The message contains a secure, unique link. Clicking it opens a clean, mobile-first webpage that requires **no login**.
+3.  **Responds:** The Recipient has two primary options:
+    *   **"Mark as Done":** Confirms completion of the task.
+    *   **"Remind Me Later":** Snoozes the reminder for a predefined period (e.g., 24 hours).
 
-### 3.3. Tracking and Escalation
+### 3.3. The System's Role: Orchestration and Tracking
 
-1.  The Creator tracks the status of all reminders on their dashboard (Sent, Delivered, Opened, Responded, Completed).
-2.  When a Recipient marks a reminder as done, the status is updated in real-time.
-3.  If a reminder is not completed by its due date, the system automatically triggers the predefined escalation rules.
+1.  **Delivery:** The system dispatches notifications at the scheduled times.
+2.  **Tracking:** It tracks the status of each notification (Sent, Delivered, Failed) and each reminder (Pending, Completed).
+3.  **Dashboard Updates:** The Creator's dashboard is updated in real-time to reflect the latest status of all reminders.
+4.  **Escalation:** The system automatically executes the defined escalation rules for unanswered reminders.
+5.  **Integration:** It syncs data with Zoho, such as marking a reminder complete when a linked invoice is paid in Zoho Books.
 
-## 4. Feature List
+## 4. Feature Roadmap
 
-| Feature Category | MVP (v0.1) | v1.0 | v2.0 |
+| Feature Category | MVP (v0.1) | v1.0 (Post-Launch) | v2.0 (Future) |
 | :--- | :--- | :--- | :--- |
-| **Reminders** | Create, schedule (one-time, recurring), and track reminders. | Customizable reminder templates. | AI-powered scheduling optimization. |
-| **Channels** | Email, WhatsApp, Telegram. | SMS/iMessage for US customers. | Interactive voice response (IVR) reminders. |
-| **Recipient UX** | Link-based, no-login response page. | Ability to add notes to responses. | Two-way chat with the Creator via the platform. |
-| **Integrations** | Zoho Billing & Books (read-only). | Zoho CRM & Desk (read/write). | Deeper integration with payment gateways (e.g., Stripe, PayPal). |
-| **AI** | Basic escalation rules. | AI-powered completion detection (e.g., analyzing email replies). | Predictive analytics on response likelihood. |
+| **Reminder Engine** | Create, schedule (one-time, recurring), and track reminders. Basic escalation rules. | Customizable reminder templates. Advanced recurrence rules (e.g., "every third Tuesday"). | AI-powered scheduling optimization (suggesting the best time to send). |
+| **Delivery Channels** | Email, WhatsApp, Telegram. | SMS/iMessage for US customers (evaluation required). | Interactive voice response (IVR) calls for critical reminders. |
+| **Recipient Experience** | Simple, link-based, no-login response page with "Done" and "Snooze" options. | Ability for recipients to add a note to their response. | Secure, two-way chat between the Creator and Recipient via the platform. |
+| **Integrations** | Zoho Billing & Books (read-only sync for subscriptions and invoices). | Zoho CRM (contact sync) & Zoho Desk (ticket creation for escalations). | Deeper integration with payment gateways (Stripe, PayPal) and other business tools. |
 
 ## 5. Non-Functional Requirements
 
-| Requirement | Target | Notes |
+| Requirement | Target | Justification & Measurement |
 | :--- | :--- | :--- |
-| **API Latency** | p95 < 200ms | For all core API endpoints. |
-| **UI Load Time** | < 2 seconds | For the main dashboard and reminder creation pages. |
-| **Uptime** | > 99.9% | For all user-facing services. |
-| **Accessibility** | WCAG 2.1 AA | Ensuring the platform is usable by people with disabilities. |
-| **Localization** | Timezone-aware scheduling. | UI text in English only for MVP. |
-| **Auditability** | All actions logged. | For compliance and security purposes. |
+| **API Latency** | p95 < 200ms | Ensures a snappy and responsive user experience. Measured by Datadog APM. |
+| **UI Load Time** | LCP < 2 seconds | Critical for user retention and satisfaction. Measured by Vercel Analytics and Lighthouse. |
+| **Reliability / Uptime** | > 99.9% | Users must trust the system to send critical reminders. Measured by Datadog Synthetics. |
+| **Security** | OWASP Top 10 Mitigated | The platform handles sensitive business communication and must be secure. Verified by security audits and automated scans. |
+| **Accessibility** | WCAG 2.1 AA | Ensures the platform is usable by everyone. Verified by automated tools (`axe-core`) and manual testing. |
+| **Data Integrity** | Zero data loss | All data must be stored and processed accurately. Verified by end-to-end tests and database constraints. |
 
-## 6. Pricing & Plan Assumptions
-
-| Plan | Price (USD/month) | Key Features |
-| :--- | :--- | :--- |
-| **Free** | $0 | 10 reminders/month, Email channel only. |
-| **Pro** | $29 | 100 reminders/month, all channels, basic integrations. |
-| **Business** | $99 | Unlimited reminders, advanced integrations, priority support. |
-
-## 7. Data Retention & Deletion
-
-*   **Retention:** User data will be retained as long as the account is active. Inactive accounts (no login for 12 months) will be marked for deletion.
-*   **Deletion:** Users can request to delete their account and all associated data at any time. The deletion process will be completed within 30 days, in compliance with GDPR.
-
-## 8. Out of Scope for MVP
+## 6. Out of Scope for MVP
 
 *   Personal (self-reminding) reminders.
-*   A native mobile application for Creators.
-*   Advanced AI features beyond basic escalation.
+*   A native mobile application for Creators (the web app will be mobile-responsive).
+*   Advanced AI features beyond the defined escalation rules.
 *   Direct payment processing within the platform.
 *   UI localization beyond English.
 
 ## Implementation Notes for AI Agents
 
-*   **Focus on the Core Loop:** The highest priority is the end-to-end flow of creating a reminder, sending it, and tracking the response. All other features are secondary.
-*   **Recipient Experience is Key:** The recipient-facing page must be extremely simple and fast. The goal is a "one-tap done" experience.
-*   **Acceptance Criteria:**
-    *   A user can successfully create and send a reminder via Email, WhatsApp, and Telegram.
-    *   A recipient can open the reminder link and mark it as complete without logging in.
-    *   The creator can see the updated status on their dashboard.
-    *   The system correctly handles timezone differences for scheduling.
+*   **Reference the Vision:** Constantly refer back to the *00-Product-Vision-and-Business-Context.md* to ensure your implementation aligns with the core pillars of Simplicity, Reliability, Intelligence, and Integration.
+*   **Prioritize the Core Loop:** The absolute priority is the end-to-end workflow: Create → Send → Respond → Track. All other features are secondary.
+*   **Recipient Experience is Paramount:** The recipient-facing page must be exceptionally simple, fast, and reliable. It is a key differentiator.
+*   **Acceptance Criteria for MVP:**
+    *   A user can successfully create a reminder with at least one recipient and schedule it for a future date.
+    *   The reminder is successfully delivered via Email, WhatsApp, and Telegram.
+    *   A recipient can open the unique link from the notification and mark the reminder as "Done" without needing to log in.
+    *   The Creator's dashboard accurately reflects the updated status of the reminder.
+    *   The system correctly handles timezone differences for scheduling, based on the Creator's settings.
