@@ -8,16 +8,19 @@
 
 ---
 
-## 1. Product Roadmap (12-16 Week MVP)
+## 1. Product Roadmap (16-20 Week MVP)
+
+This roadmap prioritizes a mobile-first delivery, with the web app serving as a secondary interface.
 
 | Weeks | Theme | Key Deliverables |
 | :--- | :--- | :--- |
 | **1-2** | **Foundation & Setup** | GitHub repo, Vercel/Supabase projects, CI/CD pipeline, auth flow. |
-| **3-5** | **Core Reminder Engine** | Create/schedule reminders, multi-channel delivery (Email, WhatsApp, Telegram). |
-| **6-8** | **Recipient Experience & Tracking** | No-login response page, dashboard for tracking, basic analytics. |
-| **9-11** | **Zoho Integration (MVP)** | Zoho Billing & Books integration (read-only), subscription sync, invoice linking. |
-| **12-14** | **Hardening & QA** | >80% test coverage, security audit, load testing, bug fixing. |
-| **15-16** | **Beta Launch & Iteration** | Onboard first beta users, gather feedback, iterate on core features. |
+| **3-6** | **Core Backend & API** | Complete tRPC API for all reminder, user, and organization logic. All business logic must be in the backend. |
+| **7-10** | **Mobile App (iOS & Android)** | React Native app with full functionality: create/manage reminders, view dashboard, receive push notifications. |
+| **11-13** | **Web App & Recipient Experience** | Web-based admin dashboard for account management and billing. The no-login recipient response page. |
+| **14-16** | **Zoho Integration & Hardening** | Zoho Billing, Books, and CRM integration. >80% test coverage, security audit, load testing. |
+| **17-18** | **App Store Submission** | Prepare and submit iOS and Android apps to the App Store and Google Play Store. |
+| **19-20** | **Beta Launch & Iteration** | Onboard first beta users, gather feedback, iterate on core features. |
 
 ## 2. Feature Breakdown (Epics & Stories)
 

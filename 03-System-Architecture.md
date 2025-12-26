@@ -41,7 +41,7 @@ graph TD
 
 | System | Role | Interaction |
 | :--- | :--- | :--- |
-| **Creator** | The primary user who creates and manages reminders. | Interacts with the ReminderSend web application. |
+| **Creator** | The primary user who creates and manages reminders. | Interacts with the ReminderSend native mobile app (iOS/Android) and the secondary web app. |
 | **Recipient** | The person who receives the reminder. | Interacts with a simple, no-login web page via a unique link. |
 | **Zoho Suite** | The business system of record. | Provides data for billing, invoicing, and CRM; receives escalations for support. |
 | **Notification Services** | The delivery channels for reminders. | Sends emails, WhatsApp messages, and Telegram messages on behalf of the platform. |
@@ -52,26 +52,33 @@ This diagram zooms into the ReminderSend platform to show its major building blo
 
 ```mermaid
 graph TD
-    subgraph "ReminderSend Platform"
-        A[**Frontend**<br>(Next.js on Vercel)] --> B[**Backend API**<br>(tRPC on Vercel Serverless)]
-        B --> C[**Database**<br>(Supabase PostgreSQL)]
-        D[**Scheduler**<br>(Vercel Cron)] -.-> B
+    subgraph "User-Facing Applications"
+        A[**Mobile App**<br>(React Native / Expo)] --> C[**Backend API**<br>(tRPC on Vercel Serverless)]
+        B[**Web App**<br>(Next.js on Vercel)] --> C
+    end
+
+    subgraph "Backend Platform"
+        C --> D[**Database**<br>(Supabase PostgreSQL)]
+        E[**Scheduler**<br>(Vercel Cron)] -.-> C
     end
 
     subgraph "External APIs"
-      B --> E{Zoho API}
-      B --> F{Notification APIs}
+      C --> F{Zoho API}
+      C --> G{Notification APIs}
+      C --> H{Push Notification Services<br>(APNS & FCM)}
     end
 
     style A fill:#ff7f0e,stroke:#000,stroke-width:1px,color:#fff
-    style B fill:#2ca02c,stroke:#000,stroke-width:1px,color:#fff
-    style C fill:#d62728,stroke:#000,stroke-width:1px,color:#fff
-    style D fill:#9467bd,stroke:#000,stroke-width:1px,color:#fff
+    style B fill:#ff7f0e,stroke:#000,stroke-width:1px,color:#fff
+    style C fill:#2ca02c,stroke:#000,stroke-width:1px,color:#fff
+    style D fill:#d62728,stroke:#000,stroke-width:1px,color:#fff
+    style E fill:#9467bd,stroke:#000,stroke-width:1px,color:#fff
 ```
 
 | Container | Description | Technology | Rationale |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | The user-facing web application for Creators and the simple response page for Recipients. | Next.js 15, React, Refine, Tailwind CSS | Provides a modern, fast, and SEO-friendly user experience with a pre-built admin panel structure. |
+| **Mobile App** | **Primary application for Creators.** A native iOS and Android app for creating and managing reminders on the go. | React Native, Expo, TanStack Query | Provides a true native experience with access to push notifications and offline capabilities. Expo simplifies the build and deployment process. |
+| **Web App** | **Secondary application for Creators** and the response page for Recipients. Used for account management, billing, and complex configurations. | Next.js 15, React, Refine, Tailwind CSS | Provides a powerful admin dashboard and a universally accessible web interface. |
 | **Backend API** | The stateless, serverless backend that handles all business logic, authentication, and integrations. | Node.js, TypeScript, tRPC, Zod | End-to-end type safety with tRPC minimizes integration errors, and the serverless nature ensures scalability. |
 | **Database** | The multi-tenant PostgreSQL database for all data persistence and user authentication. | Supabase, PostgreSQL, RLS | A managed, scalable, and secure database with built-in authentication and real-time capabilities. |
 | **Scheduler** | The background job runner for sending scheduled reminders and running periodic sync tasks. | Vercel Cron | Tightly integrated with the serverless backend, offering a simple and reliable way to schedule tasks. |

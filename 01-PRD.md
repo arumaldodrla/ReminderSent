@@ -32,7 +32,7 @@ ReminderSend solves this problem by providing a simple, reliable, and intelligen
 
 ### 3.1. The Creator's Journey: Delegating a Reminder
 
-1.  **Authentication:** The Creator logs into the ReminderSend dashboard.
+1.  **Authentication:** The Creator logs into the ReminderSend mobile app (iOS or Android) or the secondary web dashboard.
 2.  **Creation:** The Creator clicks "New Reminder" and fills in the required fields:
     *   **Title:** A clear, concise summary of the task (e.g., "Please Sign the Q4 Contract").
     *   **Description (Optional):** More detailed instructions or context.
@@ -85,7 +85,7 @@ ReminderSend solves this problem by providing a simple, reliable, and intelligen
 ## 6. Out of Scope for MVP
 
 *   Personal (self-reminding) reminders.
-*   A native mobile application for Creators (the web app will be mobile-responsive).
+*   Advanced AI features beyond the defined escalation rules.
 *   Advanced AI features beyond the defined escalation rules.
 *   Direct payment processing within the platform.
 *   Direct payment processing within the platform.

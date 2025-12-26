@@ -75,7 +75,9 @@ These pillars and principles are the essence of the product and MUST be reflecte
 
 3.  **Autonomous and Self-Healing:** The platform is designed to be self-maintaining. It will perform weekly automated self-revisions for minor updates, dependency checks, and security patches. Major feature updates will be developed by AI and deployed with human oversight, but the goal is maximum autonomy.
 
-4.  **Globally Accessible from Day One:** The platform will be built with internationalization (i18n) as a core architectural principle. The initial launch will include English and Spanish, with a clear and simple process for adding new languages via AI-powered translation workflows.
+4.  **Mobile-First, Natively:** While a web application will be available for administration and complex setups, the primary user experience for Creators will be through native mobile apps for iOS and Android. The product must feel at home on mobile, with full access to native features like push notifications and background processing.
+
+5.  **Globally Accessible from Day One:** The platform will be built with internationalization (i18n) as a core architectural principle. The initial launch will include English and Spanish, with a clear and simple process for adding new languages via AI-powered translation workflows.
 
 ## Implementation Notes for AI Agents
 

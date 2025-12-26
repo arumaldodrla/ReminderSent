@@ -84,7 +84,8 @@ All documentation files are listed below in the recommended reading order. Each 
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
-| **Frontend** | Next.js 15, React, TypeScript, Refine, Tailwind CSS, Metronic | Type-safe, fast development, admin templates |
+| **Mobile App** | React Native, Expo, TypeScript, TanStack Query | Native iOS/Android from a single codebase |
+| **Web App** | Next.js 15, React, TypeScript, Refine, Tailwind CSS | Admin dashboard and recipient-facing pages |
 | **Backend** | Node.js, TypeScript, tRPC, Zod, Vercel Serverless | End-to-end type safety, serverless scaling |
 | **Database** | Supabase PostgreSQL, Supabase Auth, RLS | Multi-tenant, built-in auth, real-time |
 | **Notifications** | SendGrid (Email), WhatsApp API, Telegram API | Reliable, multi-channel |
@@ -113,6 +114,7 @@ All development must meet these standards before merging to `main`:
 - **Simple Surface, Complex Core:** The UI must be intuitive, masking the powerful features underneath. The `01-PRD.md` specifies a `<60s` time-to-first-reminder.
 - **100% AI-Driven Development:** This entire documentation pack is structured for AI agents. The `02-SOP-AI-First-Delivery.md` defines the autonomous development loop.
 - **Autonomous and Self-Healing:** The platform maintains itself. The `16-Autonomous-Maintenance-and-Self-Revision.md` details the weekly self-update process.
+- **Mobile-First, Natively:** The primary user experience is through native mobile apps. The `03-System-Architecture.md` specifies the React Native / Expo stack.
 - **Globally Accessible:** Internationalization is a core requirement. The `03-System-Architecture.md` specifies the `next-intl` framework and i18n architecture.
 
 ---
