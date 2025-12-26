@@ -76,6 +76,7 @@ All documentation files are listed below in the recommended reading order. Each 
 | 13 | [Open Questions, Assumptions, Decisions](13-Open-Questions-Assumptions-Decisions.md) | A log of all assumptions, open questions, and conflict resolutions. |
 | 14 | [Marketing Context](14-Marketing-Context.md) | Messaging guide, value proposition, and content hooks for the marketing team. |
 | 15 | [Glossary](15-Glossary.md) | A centralized glossary of all key terms and acronyms. |
+| 16 | [Autonomous Maintenance and Self-Revision](16-Autonomous-Maintenance-and-Self-Revision.md) | The architecture and process for the platform's self-updating capabilities. |
 
 ---
 
@@ -104,6 +105,15 @@ All development must meet these standards before merging to `main`:
 - **Security:** No hardcoded secrets, RLS enforced, input validation
 - **Accessibility:** WCAG 2.1 AA compliance
 - **Documentation:** All changes documented, JSDoc on all functions
+
+---
+
+## Core Principles in Practice
+
+- **Simple Surface, Complex Core:** The UI must be intuitive, masking the powerful features underneath. The `01-PRD.md` specifies a `<60s` time-to-first-reminder.
+- **100% AI-Driven Development:** This entire documentation pack is structured for AI agents. The `02-SOP-AI-First-Delivery.md` defines the autonomous development loop.
+- **Autonomous and Self-Healing:** The platform maintains itself. The `16-Autonomous-Maintenance-and-Self-Revision.md` details the weekly self-update process.
+- **Globally Accessible:** Internationalization is a core requirement. The `03-System-Architecture.md` specifies the `next-intl` framework and i18n architecture.
 
 ---
 

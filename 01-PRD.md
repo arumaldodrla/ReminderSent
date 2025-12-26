@@ -73,12 +73,14 @@ ReminderSend solves this problem by providing a simple, reliable, and intelligen
 
 | Requirement | Target | Justification & Measurement |
 | :--- | :--- | :--- |
+| **UX Simplicity** | First reminder sent in < 60s | The core design philosophy is "Simple Surface, Complex Core." The UI must be intuitive. Measured by user testing. |
+| **Internationalization (i18n)** | English & Spanish at launch | The frontend must be built using an i18n framework (e.g., `next-intl`) to support multiple languages. All UI strings must be externalized. |
+| **Autonomous Maintenance** | Weekly self-revision | The system must include a scheduled weekly job to perform self-updates (dependencies, minor patches). See *16-Autonomous-Maintenance.md*. |
 | **API Latency** | p95 < 200ms | Ensures a snappy and responsive user experience. Measured by Datadog APM. |
 | **UI Load Time** | LCP < 2 seconds | Critical for user retention and satisfaction. Measured by Vercel Analytics and Lighthouse. |
 | **Reliability / Uptime** | > 99.9% | Users must trust the system to send critical reminders. Measured by Datadog Synthetics. |
 | **Security** | OWASP Top 10 Mitigated | The platform handles sensitive business communication and must be secure. Verified by security audits and automated scans. |
 | **Accessibility** | WCAG 2.1 AA | Ensures the platform is usable by everyone. Verified by automated tools (`axe-core`) and manual testing. |
-| **Data Integrity** | Zero data loss | All data must be stored and processed accurately. Verified by end-to-end tests and database constraints. |
 
 ## 6. Out of Scope for MVP
 
@@ -86,7 +88,7 @@ ReminderSend solves this problem by providing a simple, reliable, and intelligen
 *   A native mobile application for Creators (the web app will be mobile-responsive).
 *   Advanced AI features beyond the defined escalation rules.
 *   Direct payment processing within the platform.
-*   UI localization beyond English.
+*   Direct payment processing within the platform.
 
 ## Implementation Notes for AI Agents
 

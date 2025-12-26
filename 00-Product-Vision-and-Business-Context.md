@@ -54,9 +54,11 @@ Our primary target market consists of professionals and small businesses who rel
 
 *   **Market Positioning:** ReminderSend is positioned as a premium, specialized tool that sits between personal to-do apps and complex project management systems. It is the **best-in-class solution for external follow-up**.
 
-## 6. Core Pillars of the Product
+## 6. Core Pillars and Design Philosophy
 
-These four pillars are the essence of the product and should be reflected in all development and marketing materials.
+These pillars and principles are the essence of the product and MUST be reflected in all development and marketing materials.
+
+### Core Product Pillars
 
 | Pillar | Description |
 | :--- | :--- |
@@ -64,6 +66,16 @@ These four pillars are the essence of the product and should be reflected in all
 | **Reliability** | A robust, enterprise-grade delivery engine that ensures reminders are sent on time, every time. Users must be able to trust the system completely. |
 | **Intelligence** | AI-powered features that go beyond simple scheduling, such as smart escalations, completion detection, and (in the future) send-time optimization. |
 | **Integration** | Seamless connectivity with the tools our users already depend on, starting with the Zoho suite, to automate workflows and eliminate data silos. |
+
+### Guiding Design Philosophy
+
+1.  **Simple Surface, Complex Core:** The user experience must be radically simple. A new user should be able to send their first reminder in under 60 seconds. This simplicity will mask a powerful, feature-rich engine that handles complex scheduling, escalations, and integrations. We will always prioritize UX clarity over exposing every raw feature.
+
+2.  **100% AI-Driven Development:** This product will be designed, developed, tested, and deployed entirely by AI agents. All documentation, code, and infrastructure must be optimized for machine readability and autonomous operation. Human intervention is reserved for strategic guidance and final oversight only.
+
+3.  **Autonomous and Self-Healing:** The platform is designed to be self-maintaining. It will perform weekly automated self-revisions for minor updates, dependency checks, and security patches. Major feature updates will be developed by AI and deployed with human oversight, but the goal is maximum autonomy.
+
+4.  **Globally Accessible from Day One:** The platform will be built with internationalization (i18n) as a core architectural principle. The initial launch will include English and Spanish, with a clear and simple process for adding new languages via AI-powered translation workflows.
 
 ## Implementation Notes for AI Agents
 

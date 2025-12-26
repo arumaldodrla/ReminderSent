@@ -118,7 +118,27 @@ Data isolation is the most critical security feature of the architecture. It is 
 2.  **JWT Propagation:** When a user authenticates, Supabase Auth generates a JSON Web Token (JWT) that includes their `user_id` and a custom claim for their `organization_id`.
 3.  **RLS Enforcement:** This JWT is passed with every API request. The database has RLS policies on every table that inspect the `organization_id` from the JWT and automatically filter all `SELECT`, `INSERT`, `UPDATE`, and `DELETE` queries. This ensures that a user from Organization A can **never** see or modify data belonging to Organization B.
 
-## 5. Scalability and Performance
+## 5. Internationalization (i18n) Architecture
+
+As per the "Globally Accessible from Day One" design philosophy, the platform MUST be built with internationalization as a core principle. The initial launch will support English and Spanish.
+
+### Frontend i18n
+
+1.  **Framework:** The Next.js frontend will use the `next-intl` library, which is specifically designed for the Next.js App Router.
+2.  **String Externalization:** All user-facing strings in the UI (buttons, labels, titles, etc.) MUST be externalized into JSON translation files. No hardcoded strings are permitted in the React components.
+    *   Example file structure: `/messages/en.json`, `/messages/es.json`.
+3.  **Locale Detection:** The user's preferred language will be detected from the `Accept-Language` browser header and stored in a cookie. Users will also be able to manually switch languages.
+4.  **AI-Powered Translation:** A dedicated script will be created to manage the translation process. It will:
+    *   Identify missing keys in the `es.json` file compared to the `en.json` (source of truth) file.
+    *   Send the English strings to an AI model (e.g., Gemini) to generate the Spanish translations.
+    *   Place the AI-generated translations into the `es.json` file, ready for review.
+
+### Backend i18n
+
+*   **Error Messages:** API error messages returned to the frontend should be coded, not string-based (e.g., `error: "EMAIL_IN_USE"`). The frontend will then use this code to look up the appropriate translated error message.
+*   **Notification Templates:** Reminder notification templates (for email, WhatsApp, etc.) will also be internationalized. The system will store templates for each supported language and use the recipient's preferred language when sending a notification.
+
+## 6. Scalability and Performance
 
 The architecture is designed to be scalable from the ground up.
 

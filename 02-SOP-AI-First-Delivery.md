@@ -1,26 +1,36 @@
-_# 02. SOP for AI-First Delivery
+_# 02. SOP for 100% AI-Driven Delivery
 
 **Owner:** Manus AI
-**Last Updated:** 2025-12-18
-**Version:** 1.0
+**Last Updated:** 2025-12-26
+**Version:** 2.0
 
-**Purpose:** This document defines the Standard Operating Procedure (SOP) for the end-to-end, 100% AI-driven development and delivery of the ReminderSend platform using Google Antigravity agents.
+**Purpose:** This document defines the Standard Operating Procedure (SOP) for the end-to-end, **100% AI-driven development, deployment, and maintenance** of the ReminderSend platform. This is a non-negotiable protocol. Human intervention is limited to strategic guidance and final approval for major releases.
 
 ---
 
-## 1. AI-Driven Delivery Lifecycle
+## 1. The Autonomous Development Lifecycle
 
-The development process follows a structured, iterative lifecycle managed entirely by AI agents. Each phase is a prerequisite for the next, ensuring a logical and high-quality delivery flow.
+The development process is a fully autonomous, closed loop managed by AI agents. Human interaction is asynchronous and occurs outside the core loop.
 
-1.  **Planning:** The lead AI agent analyzes the PRD and existing documentation to create a detailed implementation plan, breaking down features into epics and user stories.
-2.  **Design:** The agent generates system architecture diagrams, data models, and API specifications based on the plan.
-3.  **Schema:** Database schemas and migrations are created and validated against the data model.
-4.  **API:** tRPC procedures and Zod validation schemas are implemented based on the API specification.
-5.  **UI:** React components are developed using the Metronic template, connecting to the tRPC backend.
-6.  **Tests:** Unit, integration, and end-to-end tests are written to meet the >80% coverage target.
-7.  **Deploy:** Code is deployed to Vercel, and database migrations are applied to Supabase.
-8.  **Monitor:** The AI monitors Sentry and Datadog for errors and performance degradation.
-9.  **Iterate:** The AI triages issues, creates new user stories, and repeats the cycle.
+```mermaid
+graph TD
+    A[**Input**<br>(New Feature Request)] --> B{**Planning Agent**};
+    B --> C[1. Decompose into tasks & create tickets];
+    C --> D{**Development Agent**};
+    D --> E[2. Write code, tests, and docs];
+    E --> F[3. Create Pull Request];
+    F --> G{**CI Pipeline**<br>(Lint, Test, Build, Security Scan)};
+    G -- Pass --> H{**Review Agent**};
+    H -- Approve --> I[4. Auto-Merge to `main`];
+    I --> J[5. Auto-Deploy to Staging];
+    J --> K{**QA Agent**};
+    K --> L[6. Run E2E tests on Staging];
+    L -- Pass --> M{**Human Oversight**<br>(Major Releases Only)};
+    M -- Approve --> N[7. Promote to Production];
+    N --> O{**Monitoring Agent**};
+    O -- Detects Anomaly --> P[8. Create new ticket];
+    P --> D;
+```
 
 ## 2. Prompting Protocols
 
@@ -55,8 +65,8 @@ A feature is considered "Done" only when it meets all of the following criteria:
 ## 5. Release and Incident Management
 
 *   **Release Process:**
-    1.  **Staging:** All changes are automatically deployed to a staging environment that mirrors production.
-    2.  **Production:** After successful verification on staging, the release is promoted to production manually by the lead AI agent.
+    1.  **Staging:** All merges to `main` are **automatically** deployed to the staging environment.
+    2.  **Production:** For minor releases (see *16-Autonomous-Maintenance.md*), promotion to production is automatic. For major releases, a human with designated authority must provide explicit approval via a GitHub Action trigger comment on the commit.
 *   **Rollback:** If a critical issue is detected post-deployment, Vercel's instant rollback feature will be used to revert to the previous stable deployment.
 *   **Incident Handling:**
     1.  **Detection:** Sentry or Datadog automatically creates an incident.
